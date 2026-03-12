@@ -13,6 +13,9 @@ will remain unstable until Mojo 1.0 is released.
 
 Simple example of generating a single image can be found in `third_party/mav/tests/test_ffmpeg/test_ffmpeg_h264_to_pgm.mojo`
 
+High level API usage can be found in implementing repos such as:
+- [ash_dynamics io module](https://github.com/josiahls/ash_dynamics/blob/main/ash_dynamics/image/io.mojo)
+
 ## System Requirements
 
 Requires ffmpeg `8.*.*`.
