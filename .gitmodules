@@ -1,0 +1,13 @@
+
+[submodule "modular"]
+    path = third_party/modular
+    url = https://github.com/josiahls/modular.git
+    branch = main
+    ignore = all
+
+
+[submodule "ffmpeg"]
+    path = third_party/ffmpeg
+    url = https://github.com/FFmpeg/FFmpeg.git
+    branch = release/8.0
+    ignore = all

@@ -1,0 +1,115 @@
+# version: "3.8"
+
+x-mav_base: &mav_base
+  working_dir: /home/mojo_user/mav
+  logging:
+    driver: json-file
+    options:
+      max-size: 50m
+  stdin_open: true
+  tty: true
+  shm_size: 16000000000
+  ports:
+    - "5910:5910"
+  volumes:
+    - .:/home/mojo_user/mav/
+    - ~/.ssh:/home/mojo_user/.ssh:rw
+    - mav_vscode_data_cache:/home/mojo_user/.vscode-server/data/User/globalStorage:rw
+    - /tmp/.X11-unix:/tmp/.X11-unix:rw
+  environment:
+    PIXI_ENVIRONMENT_NAME: ${PIXI_ENVIRONMENT_NAME:-default}
+    CONFIGURE_LIBOPENH264: ${CONFIGURE_LIBOPENH264:-false}
+
+volumes:
+  mav_vscode_data_cache:
+      external: false
+
+services:
+  mav_build_x86_64:
+    build:
+      dockerfile: mav.Dockerfile
+      context: .
+      args:
+      - BASE_IMAGE=ubuntu:22.04
+      cache_from:
+      - josiahls/mav-x86_64-cpu:${VERSION:-latest}
+    image: josiahls/mav-x86_64-cpu:${VERSION:-latest}
+    profiles: ["build_cpu_x86_64"]
+    platform: linux/amd64
+
+  mav_build_arm64:
+    build:
+      dockerfile: mav.Dockerfile
+      context: .
+      args:
+      - BASE_IMAGE=arm64v8/ubuntu:22.04
+      cache_from:
+      - josiahls/mav-arm64-cpu:${VERSION:-latest}
+    image: josiahls/mav-arm64-cpu:${VERSION:-latest}
+    profiles: ["build_cpu_arm64"]
+    platform: linux/arm64
+
+  mav_build_gpu_x86_64:
+    build:
+      dockerfile: mav.Dockerfile
+      context: .
+      args:
+      - BASE_IMAGE=nvidia/cuda:12.0.0-devel-ubuntu22.04
+      cache_from:
+      - josiahls/mav-x86_64-gpu:${VERSION:-latest}
+    image: josiahls/mav-x86_64-gpu:${VERSION:-latest}
+    profiles: ["build_gpu_x86_64"]
+    platform: linux/amd64
+
+  #trigger
+  mav_build_gpu_arm64:
+    build:
+      dockerfile: mav.Dockerfile
+      context: .
+      args:
+      - BASE_IMAGE=nvidia/cuda:12.0.0-devel-ubuntu22.04
+      cache_from:
+      - josiahls/mav-arm64-gpu:${VERSION:-latest}
+    image: josiahls/mav-arm64-gpu:${VERSION:-latest}
+    profiles: ["build_gpu_arm64"]
+    platform: linux/arm64
+
+  mav_cpu_arm64: &mav_cpu_arm64
+    <<: *mav_base
+    profiles: ["cpu_arm64"]
+    restart: unless-stopped
+    platform: linux/arm64
+    image: josiahls/mav-arm64-cpu:${VERSION:-latest}
+
+  mav_gpu_arm64: &mav_gpu_arm64
+    <<: *mav_cpu_arm64
+    profiles: ["gpu_arm64"]
+    image: josiahls/mav-arm64-gpu:${VERSION:-latest}
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  mav_cpu_x86_64: &mav_cpu_x86_64
+    <<: *mav_base
+    profiles: ["cpu_x86_64"]
+    restart: unless-stopped
+    platform: linux/amd64
+    image: josiahls/mav-x86_64-cpu:${VERSION:-latest}
+
+  mav_gpu_x86_64: &mav_gpu_x86_64
+    <<: *mav_cpu_x86_64
+    profiles: ["gpu_x86_64"]
+    image: josiahls/mav-x86_64-gpu:${VERSION:-latest}
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+  
+
