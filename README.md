@@ -48,6 +48,13 @@ export CONFIGURE_LIBOPENH264=true
 pixi run test_all
 ```
 
+## Demo
+```bash
+pixi run test tests/test_ffmpeg/test_ffmpeg_h264_to_mp4.mojo
+```
+
+`test_data/dash_manual/testsrc_320x180_30fps_2s.mp4`
+
 ## Developer Notes
 If working in cursor, you can change the editor to use cursor instead.
 ```bash
