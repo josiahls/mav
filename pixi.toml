@@ -22,7 +22,6 @@ pre-commit = ">=4.5.0,<5"
 
 [activation.env]
 MAV_INCLUDES = " -I . -I third_party/NuMojo"
-MAV_SO_INSTALL_PREFIX = "$PIXI_PROJECT_ROOT/third_party/ffmpeg/build/lib"
 LIBRARY_PATH = "$PIXI_PROJECT_ROOT/third_party/ffmpeg/build/lib:$LIBRARY_PATH"
 LD_LIBRARY_PATH = "$PIXI_PROJECT_ROOT/third_party/ffmpeg/build/lib:$LD_LIBRARY_PATH"
 MAV_LINKERS = " -Xlinker -lavutil -Xlinker -lavcodec -Xlinker -lswresample -Xlinker -lswscale -Xlinker -lavformat"
