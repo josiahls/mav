@@ -18,6 +18,7 @@ x-mav_base: &mav_base
     - /tmp/.X11-unix:/tmp/.X11-unix:rw
   environment:
     PIXI_ENVIRONMENT_NAME: ${PIXI_ENVIRONMENT_NAME:-default}
+    CONDA_TOKEN: ${CONDA_TOKEN:-invalid}
     CONFIGURE_LIBOPENH264: ${CONFIGURE_LIBOPENH264:-false}
 
 volumes:

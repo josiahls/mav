@@ -52,6 +52,8 @@ mojo = "==0.26.2.0,<0.27"
 pre-commit = ">=4.5.0,<5"
 # Pin to LGPL build (no libx264/libx265) to avoid GPL copyleft
 ffmpeg = { version = "==8.0.1", build = "*lgpl*" }
+git = ">=2.53.0"
+openssh = ">=9.0"
 
 [feature.openh264.dependencies]
 openh264 = "==2.6.0"
@@ -68,6 +70,12 @@ extra-args = [ "$MAV_LINKERS", "$MAV_INCLUDES" ]
 install_pre_commit_hooks = { cmd = [
     "pre-commit", "install"
 ], outputs = [".git/hooks/pre-commit"]}
+
+conda_build = { cmd = "pixi build -o dist/" }
+conda_auth = { cmd = "pixi auth login anaconda.org  --conda-token $CONDA_TOKEN"}
+publish = { cmd = "find dist/ -name 'mav-*.conda' | xargs pixi upload anaconda --owner josiahls --api-key $CONDA_TOKEN" }
+conda_build_and_publish = [{ task = "conda_build" }, { task = "publish" }]
+
 
 ############################ Git Ops ###########################################
 push = "git push --force-with-lease"
