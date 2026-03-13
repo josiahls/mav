@@ -30,17 +30,10 @@ RUN apt-get update && apt-get install -y \
     nano \
     tree \
     wget \
-    libosmesa6-dev \
-    libgl1-mesa-glx \
-    libgl1-mesa-dri \
-    libosmesa6 \
-    mesa-utils \
-    libgl1-mesa-dev \
     llvm \
     clang \
     zlib1g-dev \ 
     gnupg \ 
-    ffmpeg \
     nasm \
     xauth \
     valgrind \
