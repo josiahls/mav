@@ -27,7 +27,7 @@ High level API usage can be found in implementing repos such as:
 
 pixi shell -e use-openh264
 # Note, if used in the default env, openh264 env will be used temporarily.
-# The defualt enviroment will not not have openh264 installed by default.
+# The defualt enviroment will not have openh264 installed by default.
 pixi run test_all
 ```
 
