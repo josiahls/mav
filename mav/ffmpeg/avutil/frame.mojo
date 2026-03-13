@@ -131,10 +131,12 @@ struct AVFrameSideData(Movable, Writable):
             MutExternalOrigin,
         ]
     ):
-        var sd_ptr = UnsafePointer[
-            UnsafePointer[AVFrameSideData, MutExternalOrigin], MutExternalOrigin
-        ]()
-        var sd_ptr_ptr = alloc[type_of(sd_ptr)](1)
+        var sd_ptr_ptr = alloc[
+            UnsafePointer[
+                UnsafePointer[AVFrameSideData, MutExternalOrigin],
+                MutExternalOrigin,
+            ]
+        ](1)
         memset_zero(sd_ptr_ptr, 1)
         return sd_ptr_ptr
 
