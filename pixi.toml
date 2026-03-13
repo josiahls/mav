@@ -12,13 +12,10 @@ license = "Apache-2.0"
 license-file = "LICENSE"
 homepage = "https://github.com/josiahls/mav"
 repository = "https://github.com/josiahls/mav"
+preview = ["pixi-build"]
 
 [environments]
 stdlib-dev = {features = ["stdlib-dev"]}
-
-[dependencies]
-mojo = "==0.26.2.0.dev2026031005,<0.27"
-pre-commit = ">=4.5.0,<5"
 
 [activation.env]
 MAV_INCLUDES = " -I . -I third_party/NuMojo"
@@ -27,6 +24,33 @@ LD_LIBRARY_PATH = "$PIXI_PROJECT_ROOT/third_party/ffmpeg/build/lib:$LD_LIBRARY_P
 MAV_LINKERS = " -Xlinker -lavutil -Xlinker -lavcodec -Xlinker -lswresample -Xlinker -lswscale -Xlinker -lavformat"
 MOJO_ENABLE_STACK_TRACE_ON_ERROR="1"
 LOGGING_LEVEL="DEBUG"
+
+[package]
+name = "mav"
+version = "0.0.1"
+
+[package.build]
+backend = { name = "pixi-build-mojo", version = "0.1.*" }
+
+[package.host-dependencies]
+# Static version pin for now since Mojo nightly has high churn.
+mojo-compiler = "==0.26.2.0.dev2026031005,<0.27"
+pre-commit = ">=4.5.0,<5"
+
+[package.build-dependencies]
+# Static version pin for now since Mojo nightly has high churn.
+mojo-compiler = "==0.26.2.0.dev2026031005,<0.27"
+
+[package.run-dependencies]
+# Static version pin for now since Mojo nightly has high churn.
+mojo-compiler = "==0.26.2.0.dev2026031005,<0.27"
+
+[dependencies]
+# Static version pin for now since Mojo nightly has high churn.
+mojo = "==0.26.2.0.dev2026031005,<0.27"
+
+[package.build.config]
+extra-args = [ "$MAV_LINKERS", "$MAV_INCLUDES" ]
 
 [tasks]
 ########################## Pre-commit Configuration ############################
@@ -75,27 +99,27 @@ cmd = "bash tools/configure.sh"
 depends-on = [ "install_pre_commit_hooks", "build_ffmpeg", "generate_test_videos", "install_libopenh264" ]
 
 [tasks.package]
-cmd = "pixi run mojo package $MAV_INCLUDES mav"
+cmd = "mojo package $MAV_INCLUDES mav"
 depends-on = [ "configure" ]
 
 [tasks.build]
-cmd = "pixi run mojo build $MAV_LINKERS $MAV_INCLUDES {{ file }} -o $(tools/mojo_build_ex.sh {{ file }})"
+cmd = "mojo build $MAV_LINKERS $MAV_INCLUDES {{ file }} -o $(tools/mojo_build_ex.sh {{ file }})"
 args = ["file"]
 
 [tasks.build_debug]
-cmd = "pixi run mojo build $MAV_LINKERS $MAV_INCLUDES --debug-level=line-tables {{ file }} -o $(tools/mojo_build_ex.sh {{ file }})"
+cmd = "mojo build $MAV_LINKERS $MAV_INCLUDES --debug-level=line-tables {{ file }} -o $(tools/mojo_build_ex.sh {{ file }})"
 args = ["file"]
 
 [tasks.build_valgrind]
-cmd = "pixi run mojo build $MAV_LINKERS $MAV_INCLUDES --debug-level=line-tables {{ file }} --march=x86-64-v2 -o $(tools/mojo_build_ex.sh {{ file }})"
+cmd = "mojo build $MAV_LINKERS $MAV_INCLUDES --debug-level=line-tables {{ file }} --march=x86-64-v2 -o $(tools/mojo_build_ex.sh {{ file }})"
 args = ["file"]
 
 [tasks.build_sanitize]
-cmd = "pixi run mojo build $MAV_LINKERS $MAV_INCLUDES --debug-level=line-tables {{ file }} --sanitize=address -o $(tools/mojo_build_ex.sh {{ file }})"
+cmd = "mojo build $MAV_LINKERS $MAV_INCLUDES --debug-level=line-tables {{ file }} --sanitize=address -o $(tools/mojo_build_ex.sh {{ file }})"
 args = ["file"]
 
 [tasks.format]
-cmd = "pixi run mojo format mav"
+cmd = "mojo format mav"
 
 [tasks.test_no_config]
 cmd = "./$(tools/mojo_build_ex.sh {{ file }})"
@@ -108,7 +132,7 @@ args = ["file"]
 depends-on = [ { task = "build_valgrind", args = ["{{ file }}"] } ]
 
 [tasks.debug]
-cmd = "pixi run mojo debug ./$(tools/mojo_build_ex.sh {{ file }})"
+cmd = "mojo debug ./$(tools/mojo_build_ex.sh {{ file }})"
 args = ["file"]
 depends-on = [ "configure_lldb" ]
 
@@ -120,7 +144,7 @@ depends-on = [
 ]
 
 [tasks.test_all]
-cmd = "pixi run mojo run run_tests.mojo"
+cmd = "mojo run run_tests.mojo"
 depends-on = [ "configure" ]
 
 ########################## Mojo Standard Library ###############################
