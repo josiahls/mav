@@ -739,11 +739,13 @@ fn avcodec_get_supported_config(
     codec: UnsafePointer[AVCodec, ImmutExternalOrigin],
     config: AVCodecConfig.ENUM_DTYPE,
     flags: c_uint,
-    out: UnsafePointer[OpaquePointer[ImmutExternalOrigin], MutExternalOrigin],
+    out_configs: UnsafePointer[
+        OpaquePointer[ImmutExternalOrigin], MutExternalOrigin
+    ],
     out_num: UnsafePointer[c_int, MutExternalOrigin],
 ) -> c_int:
     return external_call["avcodec_get_supported_config", c_int](
-        avctx, codec, config, flags, out, out_num
+        avctx, codec, config, flags, out_configs, out_num
     )
 
 
