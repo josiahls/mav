@@ -10,7 +10,7 @@ if [ ! -f ${OUTPUT_FILE_1} ]; then
     ffmpeg -y \
         -f lavfi -i "testsrc2=size=320x180:rate=30" \
         -t 2 \
-        -c:v libx264 \
+        -c:v libopenh264 \
         -pix_fmt yuv420p \
         -preset veryfast \
         -crf 23 \
