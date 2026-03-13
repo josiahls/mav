@@ -14,14 +14,13 @@ homepage = "https://github.com/josiahls/mav"
 repository = "https://github.com/josiahls/mav"
 preview = ["pixi-build"]
 
-[environments]
-stdlib-dev = {features = ["stdlib-dev"]}
-
 [activation.env]
+LIBRARY_PATH = "$CONDA_PREFIX/lib:$LIBRARY_PATH"
+LD_LIBRARY_PATH = "$CONDA_PREFIX/lib:$LD_LIBRARY_PATH"
 MAV_INCLUDES = " -I . -I third_party/NuMojo"
-LIBRARY_PATH = "$PIXI_PROJECT_ROOT/third_party/ffmpeg/build/lib:$LIBRARY_PATH"
-LD_LIBRARY_PATH = "$PIXI_PROJECT_ROOT/third_party/ffmpeg/build/lib:$LD_LIBRARY_PATH"
 MAV_LINKERS = " -Xlinker -lavutil -Xlinker -lavcodec -Xlinker -lswresample -Xlinker -lswscale -Xlinker -lavformat"
+MOJO_COMPILE_FLAGS = "$MAV_LINKERS $MAV_INCLUDES"
+MOJO_DEBUG_COMPILE_FLAGS = "$MOJO_COMPILE_FLAGS --debug-level=line-tables"
 MOJO_ENABLE_STACK_TRACE_ON_ERROR="1"
 LOGGING_LEVEL="DEBUG"
 
@@ -35,7 +34,6 @@ backend = { name = "pixi-build-mojo", version = "0.1.*" }
 [package.host-dependencies]
 # Static version pin for now since Mojo nightly has high churn.
 mojo-compiler = "==0.26.2.0.dev2026031005,<0.27"
-pre-commit = ">=4.5.0,<5"
 
 [package.build-dependencies]
 # Static version pin for now since Mojo nightly has high churn.
@@ -44,12 +42,20 @@ mojo-compiler = "==0.26.2.0.dev2026031005,<0.27"
 [package.run-dependencies]
 # Static version pin for now since Mojo nightly has high churn.
 mojo-compiler = "==0.26.2.0.dev2026031005,<0.27"
-pre-commit = ">=4.5.0,<5"
 
 [dependencies]
 # Static version pin for now since Mojo nightly has high churn.
 mojo = "==0.26.2.0.dev2026031005,<0.27"
 pre-commit = ">=4.5.0,<5"
+# Pin to LGPL build (no libx264/libx265) to avoid GPL copyleft
+ffmpeg = { version = "==8.0.1", build = "*lgpl*" }
+
+[feature.openh264.dependencies]
+openh264 = "==2.6.0"
+
+[environments]
+default = []
+dev = ["openh264"]
 
 [package.build.config]
 extra-args = [ "$MAV_LINKERS", "$MAV_INCLUDES" ]
@@ -60,31 +66,12 @@ install_pre_commit_hooks = { cmd = [
     "pre-commit", "install"
 ], outputs = [".git/hooks/pre-commit"]}
 
-# Note: This should be in the third_party setup directory, but pixi's support
-# for outputs in its written out form isn't supported.
-build_ffmpeg = { cmd = "bash tools/build_ffmpeg.sh", inputs = [
-    "tools/build_ffmpeg.sh",
-], outputs = [
-    "third_party/ffmpeg/build/lib/*.so"
-], depends-on = [ "clone_ffmpeg", "install_libopenh264" ] }
-
-# Same as above, however will run every time.
-build_ffmpeg_clean = { cmd = "FORCE_FFMPEG_BUILD=true bash tools/build_ffmpeg.sh", depends-on = [ "clone_ffmpeg", "install_libopenh264" ] }
-
 ############################ Git Ops ###########################################
 push = "git push --force-with-lease"
 
 [tasks.rebase]
 cmd = "git rebase -i HEAD~{{ n_commits }}"
 args = [{ arg = "n_commits", default = "1" }]
-
-######################### Third Party Setup API ################################
-
-[tasks.clone_ffmpeg]
-cmd = "bash tools/clone_ffmpeg.sh"
-
-[tasks.install_libopenh264]
-cmd = "bash tools/install_libopenh264.sh"
 
 ############################### Env setup ######################################
 
@@ -97,27 +84,26 @@ cmd = "bash tools/generate_test_videos.sh"
 
 ############################### Core API #######################################
 [tasks.configure]
-cmd = "bash tools/configure.sh"
-depends-on = [ "install_pre_commit_hooks", "build_ffmpeg", "generate_test_videos", "install_libopenh264" ]
+depends-on = [ "install_pre_commit_hooks", "generate_test_videos" ]
 
 [tasks.package]
 cmd = "mojo package $MAV_INCLUDES mav"
 depends-on = [ "configure" ]
 
 [tasks.build]
-cmd = "mojo build $MAV_LINKERS $MAV_INCLUDES {{ file }} -o $(tools/mojo_build_ex.sh {{ file }})"
+cmd = "mojo build $MOJO_COMPILE_FLAGS {{ file }} -o $(tools/mojo_build_ex.sh {{ file }})"
 args = ["file"]
 
 [tasks.build_debug]
-cmd = "mojo build $MAV_LINKERS $MAV_INCLUDES --debug-level=line-tables {{ file }} -o $(tools/mojo_build_ex.sh {{ file }})"
+cmd = "mojo build $MOJO_DEBUG_COMPILE_FLAGS {{ file }} -o $(tools/mojo_build_ex.sh {{ file }})"
 args = ["file"]
 
 [tasks.build_valgrind]
-cmd = "mojo build $MAV_LINKERS $MAV_INCLUDES --debug-level=line-tables {{ file }} --march=x86-64-v2 -o $(tools/mojo_build_ex.sh {{ file }})"
+cmd = "mojo build $MOJO_DEBUG_COMPILE_FLAGS --march=x86-64-v2 {{ file }} -o $(tools/mojo_build_ex.sh {{ file }})"
 args = ["file"]
 
 [tasks.build_sanitize]
-cmd = "mojo build $MAV_LINKERS $MAV_INCLUDES --debug-level=line-tables {{ file }} --sanitize=address -o $(tools/mojo_build_ex.sh {{ file }})"
+cmd = "mojo build $MOJO_DEBUG_COMPILE_FLAGS --sanitize=address {{ file }} -o $(tools/mojo_build_ex.sh {{ file }})"
 args = ["file"]
 
 [tasks.format]
@@ -148,26 +134,3 @@ depends-on = [
 [tasks.test_all]
 cmd = "mojo run run_tests.mojo"
 depends-on = [ "configure" ]
-
-########################## Mojo Standard Library ###############################
-[feature.stdlib-dev.activation.env]
-MODULAR_MOJO_MAX_IMPORT_PATH="$PIXI_PROJECT_ROOT/third_party/modular/bazel-bin"
-# MOJO_ENABLE_STACK_TRACE_ON_ERROR="1"
-
-[feature.stdlib-dev.tasks]
-clone_stdlib = "bash tools/clone_stdlib.sh"
-
-sym_link_stdlib = "bash tools/sym_link_stdlib.sh"
-
-update_stdlib = { cmd = [
-    "cd", "third_party/modular", "&&",
-    "./bazelw", "build", "//mojo/stdlib/std"
-], depends-on = [ "sym_link_stdlib", "clone_stdlib" ]}
-
-clean_update_stdlib = { cmd = [
-    "cd", "third_party/modular", "&&",
-    "git", "switch", "main", "&&",
-    "git", "fetch", "origin", "&&",
-    "git", "reset", "--hard", "origin/main", "&&",
-    "./bazelw", "build", "//mojo/stdlib/..."
-], depends-on = [ "clone_stdlib" ]}
