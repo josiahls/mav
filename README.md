@@ -25,8 +25,9 @@ High level API usage can be found in implementing repos such as:
 # https://via-la.com/licensing-programs/avc-h-264/#license-fees if they intend
 # to use the encoder in commercial solutions.
 
-pixi shell
-export CONFIGURE_LIBOPENH264=true
+pixi shell -e use-openh264
+# Note, if used in the default env, openh264 env will be used temporarily.
+# The defualt enviroment will not not have openh264 installed by default.
 pixi run test_all
 ```
 

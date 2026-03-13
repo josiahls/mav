@@ -55,7 +55,7 @@ openh264 = "==2.6.0"
 
 [environments]
 default = []
-dev = ["openh264"]
+use-openh264 = ["openh264"]
 
 [package.build.config]
 extra-args = [ "$MAV_LINKERS", "$MAV_INCLUDES" ]
@@ -109,11 +109,6 @@ args = ["file"]
 [tasks.format]
 cmd = "mojo format mav"
 
-[tasks.test_no_config]
-cmd = "./$(tools/mojo_build_ex.sh {{ file }})"
-args = ["file"]
-depends-on = [ { task = "build_debug", args = ["{{ file }}"] } ]
-
 [tasks.valgrind]
 cmd = "valgrind --leak-check=full --track-origins=yes -s $(tools/mojo_build_ex.sh {{ file }})"
 args = ["file"]
@@ -124,6 +119,11 @@ cmd = "mojo debug ./$(tools/mojo_build_ex.sh {{ file }})"
 args = ["file"]
 depends-on = [ "configure_lldb" ]
 
+[tasks.test_no_config]
+cmd = "./$(tools/mojo_build_ex.sh {{ file }})"
+args = ["file"]
+depends-on = [ { task = "build_debug", args = ["{{ file }}"] } ]
+
 [tasks.test]
 args = ["file"]
 depends-on = [ 
@@ -131,6 +131,6 @@ depends-on = [
     { task = "test_no_config", args = ["{{ file }}"] }
 ]
 
-[tasks.test_all]
+[feature.openh264.tasks.test_all]
 cmd = "mojo run run_tests.mojo"
 depends-on = [ "configure" ]
