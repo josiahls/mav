@@ -848,13 +848,38 @@ fn avformat_open_input(
     return res
 
 
-fn avformat_find_stream_info(
-    ic: UnsafePointer[AVFormatContext, MutExternalOrigin],
-    options: UnsafePointer[
-        UnsafePointer[AVDictionary, MutExternalOrigin], MutExternalOrigin
+fn avformat_open_input(
+    s: UnsafePointer[AVFormatContext, MutExternalOrigin],
+    mut url: String,
+    fmt: Optional[UnsafePointer[AVInputFormat, ImmutExternalOrigin]],
+    options: Optional[
+        UnsafePointer[
+            UnsafePointer[AVDictionary, MutExternalOrigin], MutExternalOrigin
+        ]
     ],
 ) -> c_int:
-    return external_call["avformat_find_stream_info", c_int](ic, options)
+    var s_ptr = alloc[type_of(s)](1)
+    s_ptr[] = s
+    var ret = avformat_open_input(
+        s=s_ptr,
+        url=url,
+        fmt=fmt,
+        options=options,
+    )
+    s_ptr.free()
+    return ret
+
+
+fn avformat_find_stream_info(
+    ic: UnsafePointer[AVFormatContext, MutExternalOrigin],
+    options: Optional[UnsafePointer[
+        UnsafePointer[AVDictionary, MutExternalOrigin], MutExternalOrigin
+    ]],
+) -> c_int:
+    var empty_options = options.Element()
+    var res = external_call["avformat_find_stream_info", c_int](ic, options.or_else(empty_options))
+    empty_options.free()
+    return res
 
 
 fn av_find_program_from_stream(
