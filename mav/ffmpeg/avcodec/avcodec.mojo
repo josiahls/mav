@@ -620,11 +620,14 @@ fn avcodec_parameters_to_context(
 fn avcodec_open2(
     context: UnsafePointer[AVCodecContext, MutExternalOrigin],
     codec: UnsafePointer[AVCodec, ImmutExternalOrigin],
-    options: UnsafePointer[
+    options: Optional[UnsafePointer[
         UnsafePointer[AVDictionary, MutExternalOrigin], MutExternalOrigin
-    ],
+    ]] = None,
 ) -> c_int:
-    return external_call["avcodec_open2", c_int](context, codec, options)
+    var empty_options = options.Element()
+    var res = external_call["avcodec_open2", c_int](context, codec, options.or_else(empty_options))
+    empty_options.free()
+    return res
 
 
 fn avsubtitle_free(sub: UnsafePointer[AVSubtitle, MutExternalOrigin]):
