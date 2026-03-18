@@ -749,6 +749,21 @@ fn alloc_output_context(
         filename=filename.as_c_string_slice().unsafe_ptr().as_immutable(),
     )
 
+fn alloc_output_context(
+    ctx: UnsafePointer[AVFormatContext, MutExternalOrigin],
+    mut filename: String,
+) -> c_int:
+    var ctx_ptr = alloc[type_of(ctx)](1)
+    ctx_ptr[] = ctx
+    var ret = avformat_alloc_output_context2(
+        ctx=ctx_ptr,
+        oformat=UnsafePointer[AVOutputFormat, ImmutExternalOrigin](),
+        format_name=UnsafePointer[c_char, ImmutExternalOrigin](),
+        filename=filename.as_c_string_slice().unsafe_ptr().as_immutable(),
+    )
+    ctx_ptr.free()
+    return ret
+
 
 fn av_find_input_format(
     mut short_name: String,
