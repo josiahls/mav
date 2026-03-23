@@ -401,18 +401,6 @@ fn avio_open(
     return external_call["avio_open", c_int](s, url_ptr, flags)
 
 
-fn avio_open(
-    s: UnsafePointer[AVIOContext, MutExternalOrigin],
-    mut url: String,
-    flags: c_int,
-) -> c_int:
-    var s_ptr = alloc[type_of(s)](1)
-    s_ptr[] = s
-    var res = external_call["avio_open", c_int](s_ptr, url, flags)
-    s_ptr.free()
-    return res
-
-
 comptime avio_open2 = fn(
     s: UnsafePointer[
         UnsafePointer[AVIOContext, MutExternalOrigin], MutExternalOrigin

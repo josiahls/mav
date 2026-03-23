@@ -293,13 +293,6 @@ fn av_frame_free(
     external_call["av_frame_free", NoneType](frame)
 
 
-fn av_frame_free(var frame: UnsafePointer[AVFrame, MutExternalOrigin]):
-    var frame_ptr = alloc[type_of(frame)](1)
-    frame_ptr[] = frame
-    external_call["av_frame_free", NoneType](frame_ptr)
-    frame_ptr.free()
-
-
 fn av_frame_ref(
     dst: UnsafePointer[AVFrame, MutExternalOrigin],
     src: UnsafePointer[AVFrame, ImmutExternalOrigin],

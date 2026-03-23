@@ -55,7 +55,7 @@ def test_alloc_output_context() raises:
     var ctx = alloc[UnsafePointer[AVFormatContext, MutExternalOrigin]](1)
 
     var filename = String("some/path/to/test.mp4")
-    var ret = avformat.alloc_output_context(
+    var ret = avformat.avformat_alloc_output_context(
         ctx=ctx,
         filename=filename,
     )
@@ -778,7 +778,10 @@ def test_av_guess_sample_aspect_ratio() raises:
     )
     # assert_true(ret_rational.num > 0)
     # assert_true(ret_rational.den > 0)
-    avutil.av_frame_free(frame)
+    var frame_ptr = alloc[UnsafePointer[AVFrame, MutExternalOrigin]](1)
+    frame_ptr[] = frame
+    avutil.av_frame_free(frame_ptr)
+    frame_ptr.free()
     avformat.avformat_close_input(ctx_ptr)
 
 
@@ -1332,7 +1335,7 @@ def test_avformat_queue_attached_pictures() raises:
 def test_av_get_output_timestamp() raises:
     var ctx = alloc[UnsafePointer[AVFormatContext, MutExternalOrigin]](1)
     var filename = String("some/path/to/test.mp4")
-    var ret = avformat.alloc_output_context(ctx=ctx, filename=filename)
+    var ret = avformat.avformat_alloc_output_context(ctx=ctx, filename=filename)
     assert_equal(ret, 0)
     var dts = alloc[c_long_long](1)
     var wall = alloc[c_long_long](1)
@@ -1354,7 +1357,7 @@ def test_avformat_write_header_trailer() raises:
     if not Bool(fmt):
         return
     var filename = String("")
-    var ret = avformat.alloc_output_context(
+    var ret = avformat.avformat_alloc_output_context(
         ctx=ctx,
         oformat=fmt,
         format_name=UnsafePointer[c_char, ImmutExternalOrigin](
@@ -1416,7 +1419,7 @@ def test_avformat_init_output() raises:
     if not Bool(fmt):
         return
     var filename = String("")
-    var ret = avformat.alloc_output_context(
+    var ret = avformat.avformat_alloc_output_context(
         ctx=ctx,
         oformat=fmt,
         format_name=UnsafePointer[c_char, ImmutExternalOrigin](
@@ -1460,7 +1463,7 @@ def test_av_write_frame() raises:
     if not Bool(fmt):
         return
     var filename = String("")
-    var ret = avformat.alloc_output_context(
+    var ret = avformat.avformat_alloc_output_context(
         ctx=ctx,
         oformat=fmt,
         format_name=UnsafePointer[c_char, ImmutExternalOrigin](
@@ -1510,7 +1513,7 @@ def test_av_interleaved_write_frame() raises:
     if not Bool(fmt):
         return
     var filename = String("")
-    var ret = avformat.alloc_output_context(
+    var ret = avformat.avformat_alloc_output_context(
         ctx=ctx,
         oformat=fmt,
         format_name=UnsafePointer[c_char, ImmutExternalOrigin](
@@ -1560,7 +1563,7 @@ def test_av_write_uncoded_frame_query() raises:
     if not Bool(fmt):
         return
     var filename = String("")
-    var ret = avformat.alloc_output_context(
+    var ret = avformat.avformat_alloc_output_context(
         ctx=ctx,
         oformat=fmt,
         format_name=UnsafePointer[c_char, ImmutExternalOrigin](
@@ -1598,7 +1601,7 @@ def test_av_write_uncoded_frame() raises:
     if not Bool(fmt):
         return
     var filename = String("")
-    var ret = avformat.alloc_output_context(
+    var ret = avformat.avformat_alloc_output_context(
         ctx=ctx,
         oformat=fmt,
         format_name=UnsafePointer[c_char, ImmutExternalOrigin](
@@ -1650,7 +1653,7 @@ def test_av_interleaved_write_uncoded_frame() raises:
     if not Bool(fmt):
         return
     var filename = String("")
-    var ret = avformat.alloc_output_context(
+    var ret = avformat.avformat_alloc_output_context(
         ctx=ctx,
         oformat=fmt,
         format_name=UnsafePointer[c_char, ImmutExternalOrigin](

@@ -579,15 +579,6 @@ fn avcodec_free_context(
     external_call["avcodec_free_context", NoneType](avctx)
 
 
-fn avcodec_free_context(
-    avctx: UnsafePointer[AVCodecContext, MutExternalOrigin]
-):
-    var avctx_ptr = alloc[type_of(avctx)](1)
-    avctx_ptr[] = avctx
-    avcodec_free_context(avctx_ptr)
-    avctx_ptr.free()
-
-
 fn avcodec_get_class() -> UnsafePointer[AVClass, ImmutExternalOrigin]:
     return external_call[
         "avcodec_get_class", UnsafePointer[AVClass, ImmutExternalOrigin]
@@ -620,12 +611,16 @@ fn avcodec_parameters_to_context(
 fn avcodec_open2(
     context: UnsafePointer[AVCodecContext, MutExternalOrigin],
     codec: UnsafePointer[AVCodec, ImmutExternalOrigin],
-    options: Optional[UnsafePointer[
-        UnsafePointer[AVDictionary, MutExternalOrigin], MutExternalOrigin
-    ]] = None,
+    options: Optional[
+        UnsafePointer[
+            UnsafePointer[AVDictionary, MutExternalOrigin], MutExternalOrigin
+        ]
+    ] = None,
 ) -> c_int:
     var empty_options = options.Element()
-    var res = external_call["avcodec_open2", c_int](context, codec, options.or_else(empty_options))
+    var res = external_call["avcodec_open2", c_int](
+        context, codec, options.or_else(empty_options)
+    )
     empty_options.free()
     return res
 

@@ -152,10 +152,19 @@ def test_av_decode_video_example() raises:
                     print("Packet size: ", packet[].size)
                     decode(context, frame, packet, out_filename)
 
-    avutil.av_frame_free(frame)
-    avcodec.av_packet_free(packet)
+    var frame_ptr = alloc[UnsafePointer[AVFrame, MutExternalOrigin]](1)
+    frame_ptr[] = frame
+    avutil.av_frame_free(frame_ptr)
+    frame_ptr.free()
+    var pkt_ptr = alloc[UnsafePointer[AVPacket, MutExternalOrigin]](1)
+    pkt_ptr[] = packet
+    avcodec.av_packet_free(pkt_ptr)
+    pkt_ptr.free()
 
-    avcodec.avcodec_free_context(context)
+    var ctx_ptr = alloc[UnsafePointer[AVCodecContext, MutExternalOrigin]](1)
+    ctx_ptr[] = context
+    avcodec.avcodec_free_context(ctx_ptr)
+    ctx_ptr.free()
     avcodec.av_parser_close(parser)
 
 
