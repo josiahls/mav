@@ -104,13 +104,25 @@ struct OutputStream(Movable):
 
     fn __del__(deinit self):
         if self.frame:
-            avutil.av_frame_free(self.frame)
+            var ptr = alloc[UnsafePointer[AVFrame, MutExternalOrigin]](1)
+            ptr[] = self.frame
+            avutil.av_frame_free(ptr)
+            ptr.free()
         if self.tmp_frame:
-            avutil.av_frame_free(self.tmp_frame)
+            var ptr = alloc[UnsafePointer[AVFrame, MutExternalOrigin]](1)
+            ptr[] = self.tmp_frame
+            avutil.av_frame_free(ptr)
+            ptr.free()
         if self.tmp_pkt:
-            avcodec.av_packet_free(self.tmp_pkt)
+            var ptr = alloc[UnsafePointer[AVPacket, MutExternalOrigin]](1)
+            ptr[] = self.tmp_pkt
+            avcodec.av_packet_free(ptr)
+            ptr.free()
         if self.enc:
-            avcodec.avcodec_free_context(self.enc)
+            var ptr = alloc[UnsafePointer[AVCodecContext, MutExternalOrigin]](1)
+            ptr[] = self.enc
+            avcodec.avcodec_free_context(ptr)
+            ptr.free()
 
 
 def alloc_frame(
@@ -486,9 +498,9 @@ def test_av_mux_example() raises:
     var parent_path = Path(String(std.os.sep).join(parent_path_parts))
     std.os.makedirs(parent_path, exist_ok=True)
     # FIXME: Tryout without any flags, just h264 to mp4.
-    # ret = avformat.alloc_output_context(oc, output_filename)
+    # ret = avformat.avformat_alloc_output_context(oc, output_filename)
 
-    ret = avformat.alloc_output_context(
+    ret = avformat.avformat_alloc_output_context(
         ctx=oc,
         filename=output_filename,
     )

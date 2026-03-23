@@ -135,7 +135,10 @@ def test_sws_test_frame() raises:
     assert_equal(ret, 0)
     var test_ret = sws.sws_test_frame(frame.as_immutable(), 0)
     assert_true(test_ret >= 0)
-    avutil.av_frame_free(frame)
+    var _ptr = alloc[UnsafePointer[AVFrame, MutExternalOrigin]](1)
+    _ptr[] = frame
+    avutil.av_frame_free(_ptr)
+    _ptr.free()
 
 
 def test_sws_scale_frame() raises:
@@ -174,8 +177,14 @@ def test_sws_scale_frame() raises:
     )
     assert_equal(scale_ret, 240)
     sws.sws_freeContext(ctx)
-    avutil.av_frame_free(src)
-    avutil.av_frame_free(dst)
+    var _ptr = alloc[UnsafePointer[AVFrame, MutExternalOrigin]](1)
+    _ptr[] = src
+    avutil.av_frame_free(_ptr)
+    _ptr.free()
+    _ptr = alloc[UnsafePointer[AVFrame, MutExternalOrigin]](1)
+    _ptr[] = dst
+    avutil.av_frame_free(_ptr)
+    _ptr.free()
 
 
 def test_sws_scale() raises:
@@ -238,8 +247,14 @@ def test_sws_scale() raises:
     sws.sws_freeContext(ctx)
     src_slice.free()
     dst_slice.free()
-    avutil.av_frame_free(src_frame)
-    avutil.av_frame_free(dst_frame)
+    var _ptr = alloc[UnsafePointer[AVFrame, MutExternalOrigin]](1)
+    _ptr[] = src_frame
+    avutil.av_frame_free(_ptr)
+    _ptr.free()
+    _ptr = alloc[UnsafePointer[AVFrame, MutExternalOrigin]](1)
+    _ptr[] = dst_frame
+    avutil.av_frame_free(_ptr)
+    _ptr.free()
 
 
 def test_sws_is_noop() raises:
@@ -258,8 +273,14 @@ def test_sws_is_noop() raises:
         src.as_immutable(),
     )
     assert_equal(noop, 1)
-    avutil.av_frame_free(src)
-    avutil.av_frame_free(dst)
+    var _ptr = alloc[UnsafePointer[AVFrame, MutExternalOrigin]](1)
+    _ptr[] = src
+    avutil.av_frame_free(_ptr)
+    _ptr.free()
+    _ptr = alloc[UnsafePointer[AVFrame, MutExternalOrigin]](1)
+    _ptr[] = dst
+    avutil.av_frame_free(_ptr)
+    _ptr.free()
 
 
 def test_sws_frame_setup() raises:
@@ -293,8 +314,14 @@ def test_sws_frame_setup() raises:
     )
     assert_equal(ret, 0)
     sws.sws_freeContext(ctx)
-    avutil.av_frame_free(src)
-    avutil.av_frame_free(dst)
+    var _ptr = alloc[UnsafePointer[AVFrame, MutExternalOrigin]](1)
+    _ptr[] = src
+    avutil.av_frame_free(_ptr)
+    _ptr.free()
+    _ptr = alloc[UnsafePointer[AVFrame, MutExternalOrigin]](1)
+    _ptr[] = dst
+    avutil.av_frame_free(_ptr)
+    _ptr.free()
 
 
 def main() raises:

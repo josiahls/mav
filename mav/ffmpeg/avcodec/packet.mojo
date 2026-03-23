@@ -238,13 +238,6 @@ fn av_packet_free(
     external_call["av_packet_free", NoneType](pkt)
 
 
-fn av_packet_free(pkt: UnsafePointer[AVPacket, MutExternalOrigin]):
-    var pkt_ptr = alloc[type_of(pkt)](1)
-    pkt_ptr[] = pkt
-    av_packet_free(pkt_ptr)
-    pkt_ptr.free()
-
-
 # NOTE: av_init_packet is an optional function that is being deprecated.
 # I don't think we need to implement this, but leaving this here as a reference.
 # #if FF_API_INIT_PACKET
