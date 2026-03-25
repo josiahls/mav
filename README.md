@@ -7,7 +7,7 @@ Low level FFmpeg (`8.*`) bindings to Mojo for audio, image, and video processing
 Emphaisis should be placed on Low Level. This repo will never provide a high level API.
 This project is originally part of ash_dynamics, but has been separated out to be used by other projects.
 
-This package uses ffmpeg 8.0.1 from conda-forge.
+This package uses ffmpeg 8.0.1 from conda-forge. Please the LICENSE section for more information.
 
 Simple example of generating a single image can be found in `third_party/mav/tests/test_ffmpeg/test_ffmpeg_h264_to_pgm.mojo`
 
@@ -46,6 +46,8 @@ git config core.editor "cursor --wait"
 
 ## License
 
-Distributed under the Apache 2.0 License with LLVM Exceptions. See [LICENSE](https://github.com/Mojo-Numerics-and-Algorithms-group/NuMojo/blob/main/LICENSE) and the LLVM [License](https://llvm.org/LICENSE.txt) for more information.
+This software uses libraries from the FFmpeg project under the LGPLv2.1 license.
+
+Distributed under the Apache 2.0 License with LLVM Exceptions. See [LICENSE](https://github.com/josiahls/mav/blob/main/LICENSE) and the LLVM [License](https://llvm.org/LICENSE.txt) for more information.
 
 This project includes code from [Mojo Standard Library](https://github.com/modular/modular), licensed under the Apache License v2.0 with LLVM Exceptions (see the LLVM [License](https://llvm.org/LICENSE.txt)). MAX and Mojo usage and distribution are licensed under the [MAX & Mojo Community License](https://www.modular.com/legal/max-mojo-license).
