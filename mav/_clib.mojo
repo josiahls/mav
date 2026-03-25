@@ -24,7 +24,7 @@ comptime c_ptrdiff_t = c_long_long
 
 struct ExternalFunction[
     name: StaticString,
-    type: __TypeOfAllTypes,
+    type: TrivialRegisterPassable,
 ]:
     """Loads external functions from a dynamic library.
 
@@ -100,7 +100,7 @@ struct C_Union[*Ts: Copyable & Movable](
         return ptr
 
 
-struct TrivialOptionalField[active: Bool, ElementType: __TypeOfAllTypes](
+struct TrivialOptionalField[active: Bool, ElementType: TrivialRegisterPassable](
     Copyable, Movable, Writable
 ):
     comptime OptionalElementType = StaticTuple[
