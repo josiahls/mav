@@ -151,7 +151,6 @@ def open_video(
     mut ost: OutputStream,
     opt_arg: UnsafePointer[AVDictionary, ImmutExternalOrigin],
 ) raises:
-    var ret: c_int = 0
     var c = ost.enc
     # NOTE: We need to add an override to avcodec_open2 that makes
     # an internal null pointer. Debug mode otherwise fails on this.
@@ -192,7 +191,6 @@ def add_stream(
     ],
     codec_id: AVCodecID.ENUM_DTYPE,
 ) raises:
-    var i: c_int = 0
     # var c = alloc[AVCodecContext](1)
 
     codec[] = avcodec.avcodec_find_encoder(codec_id)
@@ -300,8 +298,6 @@ def fill_yuv_image(
     width: c_int,
     height: c_int,
 ) raises:
-    var x: c_int = 0
-    var y: c_int = 0
     var i: c_int = frame_index
     for y in range(height):
         for x in range(width):
@@ -412,9 +408,7 @@ def write_frame(
     frame: UnsafePointer[AVFrame, MutExternalOrigin],
     pkt: UnsafePointer[AVPacket, MutExternalOrigin],
 ) raises -> c_int:
-    # TODO: Check pkt. It looks completely invalid.
-    var ret = c_int(0)
-    ret = avcodec.avcodec_send_frame(c, frame)
+    var ret = avcodec.avcodec_send_frame(c, frame)
     if ret < 0:
         std.os.abort("Failed to send frame to encoder")
     _ = frame
@@ -468,7 +462,6 @@ def test_av_mux_example() raises:
     # NOTE: Not interested in audio at the moment.
     # var audio_codec = AVCodec()
     var video_codec = alloc[UnsafePointer[AVCodec, ImmutExternalOrigin]](1)
-    var ret = c_int(0)
     var have_video = c_int(0)
     # NOTE: Not interested in audio at the moment.
     # var have_audio = c_int(0)
@@ -482,7 +475,6 @@ def test_av_mux_example() raises:
     opt2[] = UnsafePointer[
         AVDictionary, MutExternalOrigin
     ]()  # NULL, let FFmpeg manage
-    var i = c_int(0)
 
     var test_data_root = std.os.getenv("PIXI_PROJECT_ROOT")
     var input_filename: String = (
@@ -500,7 +492,7 @@ def test_av_mux_example() raises:
     # FIXME: Tryout without any flags, just h264 to mp4.
     # ret = avformat.avformat_alloc_output_context(oc, output_filename)
 
-    ret = avformat.avformat_alloc_output_context(
+    var ret = avformat.avformat_alloc_output_context(
         ctx=oc,
         filename=output_filename,
     )
