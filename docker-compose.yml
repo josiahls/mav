@@ -15,7 +15,6 @@ x-mav_base: &mav_base
     - .:/home/mojo_user/mav/
     - ~/.ssh:/home/mojo_user/.ssh:rw
     - mav_vscode_data_cache:/home/mojo_user/.vscode-server/data/User/globalStorage:rw
-    - /tmp/.X11-unix:/tmp/.X11-unix:rw
   environment:
     PIXI_ENVIRONMENT_NAME: ${PIXI_ENVIRONMENT_NAME:-default}
     CONDA_TOKEN: ${CONDA_TOKEN:-invalid}
@@ -62,7 +61,6 @@ services:
     profiles: ["build_gpu_x86_64"]
     platform: linux/amd64
 
-  #trigger
   mav_build_gpu_arm64:
     build:
       dockerfile: mav.Dockerfile

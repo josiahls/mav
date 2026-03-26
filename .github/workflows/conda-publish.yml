@@ -1,0 +1,86 @@
+name: Publish mav conda package
+on:
+  schedule:
+    - cron: '1 6 * * 5'
+  workflow_dispatch: #allows you to trigger manually
+  push:
+    branches:
+      - main
+      - feature/support-prebuilt-ffmpeg
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+  check-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      should-build: ${{ steps.changes.outputs.should-build }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 5
+
+    - name: Check for relevant changes
+      id: changes
+      run: |
+        if [[ "${{ github.event_name }}" == "schedule" ]] || [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          echo "should-build=true" >> $GITHUB_OUTPUT
+          echo "Scheduled or manual run - build and publish conda package"
+        elif git diff --name-only ${{ github.event.before }}..${{ github.sha }} | grep -E "(pixi\.(toml|lock))" > /dev/null; then
+          echo "should-build=true" >> $GITHUB_OUTPUT
+          echo "Docker/pixi files changed - build and publish conda package"
+        else
+          echo "should-build=false" >> $GITHUB_OUTPUT
+          echo "No relevant changes - skipping conda package build and publish"
+        fi
+
+  publish:
+    needs: check-changes
+    if: needs.check-changes.outputs.should-build == 'true'
+    runs-on: ${{ matrix.runner.RUNNER_NAME }}
+    # Duplicate conda packages (or other publish noise) should not fail the workflow.
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        runner:
+          - RUNNER_NAME: ubuntu-24.04-arm
+            PLATFORM: arm64
+            DEVICE: cpu
+          - RUNNER_NAME: ubuntu-latest
+            PLATFORM: x86_64
+            DEVICE: cpu
+          # - RUNNER_NAME: ubuntu-24.04-arm
+          #   PLATFORM: arm64
+          #   DEVICE: gpu
+          # - RUNNER_NAME: ubuntu-latest
+          #   PLATFORM: x86_64
+          #   DEVICE: gpu
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Fix workspace permissions
+      run: |
+        sudo chown -R 1000:1000 .
+
+    - name: Build and publish mav
+      run: |
+        export DOCKER_BUILDKIT=1
+        export COMPOSE_PROFILES=build_${DEVICE}_${PLATFORM}
+        echo ${PASSWORD} | docker login -u $USERNAME --password-stdin
+        
+        docker compose run --rm mav_${DEVICE}_${PLATFORM} bash -l -c "pixi run configure && pixi run conda_build_and_publish"
+      env:
+        USERNAME: ${{ secrets.DOCKER_USERNAME }}
+        PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        CONDA_TOKEN: ${{ secrets.CONDA_TOKEN }}
+        PLATFORM: ${{ matrix.runner.PLATFORM }}
+        DEVICE: ${{ matrix.runner.DEVICE }}

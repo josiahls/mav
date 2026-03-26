@@ -7,7 +7,7 @@ channels = [
 ]
 name = "mav"
 platforms = ["linux-64", "linux-aarch64"]
-version = "0.0.2"
+version = "0.0.4"
 license = "Apache-2.0"
 license-file = "LICENSE"
 homepage = "https://github.com/josiahls/mav"
@@ -26,7 +26,7 @@ LOGGING_LEVEL="DEBUG"
 
 [package]
 name = "mav"
-version = "0.0.2"
+version = "0.0.4"
 
 [package.build]
 backend = { name = "pixi-build-mojo", version = "0.1.*" }
@@ -34,17 +34,20 @@ backend = { name = "pixi-build-mojo", version = "0.1.*" }
 [package.host-dependencies]
 # Static version pin for now since Mojo nightly has high churn.
 mojo-compiler = "==0.26.2.0,<0.27"
-# ffmpeg has zlib version restrictions, thus can conflict with git.
-git = ">=2.53.0"
-openssh = ">=9.0"
+# Pin to LGPL build (no libx264/libx265) to avoid GPL copyleft
+ffmpeg = { version = "==8.0.1", build = "*lgpl*" }
 
 [package.build-dependencies]
 # Static version pin for now since Mojo nightly has high churn.
 mojo-compiler = "==0.26.2.0,<0.27"
+# Pin to LGPL build (no libx264/libx265) to avoid GPL copyleft
+ffmpeg = { version = "==8.0.1", build = "*lgpl*" }
 
 [package.run-dependencies]
 # Static version pin for now since Mojo nightly has high churn.
 mojo-compiler = "==0.26.2.0,<0.27"
+# Pin to LGPL build (no libx264/libx265) to avoid GPL copyleft
+ffmpeg = { version = "==8.0.1", build = "*lgpl*" }
 
 [dependencies]
 # Static version pin for now since Mojo nightly has high churn.
@@ -73,7 +76,7 @@ install_pre_commit_hooks = { cmd = [
 
 conda_build = { cmd = "pixi build -o dist/" }
 conda_auth = { cmd = "pixi auth login anaconda.org  --conda-token $CONDA_TOKEN"}
-publish = { cmd = "find dist/ -name 'mav-*.conda' | xargs pixi upload anaconda --owner josiahls --api-key $CONDA_TOKEN" }
+publish = { cmd = "find dist/ -name 'mav-*.conda' | xargs pixi upload anaconda --api-key $CONDA_TOKEN --owner josiahls" }
 conda_build_and_publish = [{ task = "conda_build" }, { task = "publish" }]
 
 
