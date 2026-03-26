@@ -16,6 +16,20 @@ High level API usage can be found in implementing repos such as:
 
 ## Installation
 
+### Pixi / Conda
+
+`mav` will install `FFmpeg`, however the Mojo compiler must be pointed to those
+libraries.
+```bash
+# Add to [activation.env]
+LIBRARY_PATH = "$CONDA_PREFIX/lib:$LIBRARY_PATH"
+MAV_LINKERS = " -Xlinker -lavutil -Xlinker -lavcodec -Xlinker -lswresample -Xlinker -lswscale -Xlinker -lavformat"
+
+pixi add mav
+
+pixi run mojo build $MAV_LINKERS file.mojo -o file
+```
+
 ### Ubuntu
 ```bash
 # For encoding video and simulations into h264, the encoder must be installed
