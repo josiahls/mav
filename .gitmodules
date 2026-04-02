@@ -1,0 +1,4 @@
+[submodule "modular-community"]
+	path = third_party/modular-community
+	url = git@github.com:josiahls/modular-community.git
+    ignore = all
