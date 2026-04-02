@@ -19,6 +19,11 @@ Its strongly recommended to use the native FFmpeg C [examples](https://github.co
 ## High Level API Current Projects Using MAV
 - [momanim](https://github.com/josiahls/momanim) (Early development)
 
+![./test_video_save.gif](./test_video_save.gif)
+
+## Current Projects Using MAV
+- [momanim](https://github.com/josiahls/momanim) (Early development)
+
 ## Installation
 
 ### Pixi / Conda
@@ -71,6 +76,15 @@ Self-contained demo: read one PNG via libavcodec, write PNG and JPEG via encoder
 ```bash
 pixi run test tests/test_ffmpeg/test_image_example.mojo
 ```
+Output example: `test_data/dash_manual/testsrc_320x180_30fps_2s.mp4` (under `PIXI_PROJECT_ROOT` / project root when set).
+
+### Image encode/decode (`test_image_example.mojo`)
+
+Self-contained demo: read one PNG via libavcodec, write PNG and JPEG via encoders + libswscale (`RGB24` / `YUV420P` as appropriate).
+
+```bash
+pixi run test tests/test_ffmpeg/test_image_example.mojo
+```
 
 | | Path (relative to project root / `PIXI_PROJECT_ROOT`) |
 |---|--------------------------------------------------------|
@@ -80,7 +94,7 @@ pixi run test tests/test_ffmpeg/test_image_example.mojo
 
 ### Video decode → encode (`test_video_example.mojo`)
 
-Self-contained demo: read one MP4, decode frames to in-memory RGBA, then mux to MP4, WebM, and GIF. Not a public API—reference only.
+Self-contained demo: read one MP4, decode frames to in-memory RGBA, then mux to MP4, WebM, and GIF.
 
 ```bash
 pixi run test tests/test_ffmpeg/test_video_example.mojo
