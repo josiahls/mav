@@ -88,7 +88,7 @@ struct OutputStream(Movable):
     var sws_ctx: UnsafePointer[SwsContext, origin=MutExternalOrigin]
     var swr_ctx: UnsafePointer[SwrContext, origin=MutExternalOrigin]
 
-    fn __init__(out self) raises:
+    def __init__(out self) raises:
         self.st = UnsafePointer[AVStream, MutExternalOrigin]()
         self.enc = UnsafePointer[AVCodecContext, MutExternalOrigin]()
         self.next_pts = c_long_long(0)
@@ -102,7 +102,7 @@ struct OutputStream(Movable):
         self.sws_ctx = UnsafePointer[SwsContext, MutExternalOrigin]()
         self.swr_ctx = UnsafePointer[SwrContext, MutExternalOrigin]()
 
-    fn __del__(deinit self):
+    def __del__(deinit self):
         if self.frame:
             var ptr = alloc[UnsafePointer[AVFrame, MutExternalOrigin]](1)
             ptr[] = self.frame
@@ -543,12 +543,10 @@ def test_av_mux_example() raises:
             # fprintf(stderr, "Could not open '%s': %s\n", filename,
             #         av_err2str(ret));
 
-    print("writing header")
     ret = avformat.avformat_write_header(
         oc[],
         opt2,
     )
-    print("dune writing")
     if ret < 0:
         std.os.abort("Failed to write header: {}".format(ret))
         # TODO: Not sure if mojo can access stderror or not?

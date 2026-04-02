@@ -4,15 +4,17 @@
 ## Overview
 
 Low level FFmpeg (`8.*`) bindings to Mojo for audio, image, and video processing.
-Emphaisis should be placed on Low Level. This repo will never provide a high level API.
+Emphasis should be placed on Low Level. This repo will never provide a high level API.
 This project is originally part of ash_dynamics, but has been separated out to be used by other projects.
 
-This package uses ffmpeg 8.0.1 from conda-forge. Please the LICENSE section for more information.
+This package uses ffmpeg 8.0.1 from conda-forge. Please see the LICENSE section for more information.
 
-Simple example of generating a single image can be found in `tests/test_ffmpeg/test_ffmpeg_h264_to_pgm.mojo`
+Simple example of generating a single image can be found in `tests/test_ffmpeg/test_image_example.mojo`
 
 High level API usage can be found in implementing repos such as:
 - [ash_dynamics io module](https://github.com/josiahls/ash_dynamics/blob/main/ash_dynamics/image/io.mojo)
+
+![./test_video_save.gif](./test_video_save.gif)
 
 ## Installation
 
@@ -53,7 +55,7 @@ pixi run mojo build $MAV_LINKERS file.mojo -o file
 
 pixi shell -e use-openh264
 # Note, if used in the default env, openh264 env will be used temporarily.
-# The defualt enviroment will not have openh264 installed by default.
+# The default environment will not have openh264 installed by default.
 pixi run test_all
 ```
 
@@ -61,8 +63,38 @@ pixi run test_all
 ```bash
 pixi run test tests/test_ffmpeg/test_ffmpeg_h264_to_mp4.mojo
 ```
+Output example: `test_data/dash_manual/testsrc_320x180_30fps_2s.mp4` (under `PIXI_PROJECT_ROOT` / project root when set).
 
-`test_data/dash_manual/testsrc_320x180_30fps_2s.mp4`
+### Image encode/decode (`test_image_example.mojo`)
+
+Self-contained demo: read one PNG via libavcodec, write PNG and JPEG via encoders + libswscale (`RGB24` / `YUV420P` as appropriate). Not a public API—reference only.
+
+```bash
+pixi run test tests/test_ffmpeg/test_image_example.mojo
+```
+
+| | Path (relative to project root / `PIXI_PROJECT_ROOT`) |
+|---|--------------------------------------------------------|
+| **Input** | `test_data/generate_test_videos_testsrc_128x128.png` |
+| **Outputs** | `test_data/test_image_example/test_image_write.png` |
+| | `test_data/test_image_example/test_image_write.jpg` |
+
+### Video decode → encode (`test_video_example.mojo`)
+
+Self-contained demo: read one MP4, decode frames to in-memory RGBA, then mux to MP4, WebM, and GIF. Not a public API—reference only.
+
+```bash
+pixi run test tests/test_ffmpeg/test_video_example.mojo
+```
+
+| | Path (relative to project root / `PIXI_PROJECT_ROOT`) |
+|---|--------------------------------------------------------|
+| **Input** | `test_data/generate_test_videos_testsrc_320x180_30fps_2s.mp4` |
+| **Outputs** | `test_data/test_mav/test_video_save.mp4` |
+| | `test_data/test_mav/test_video_save.webm` |
+| | `test_data/test_video_example/test_video_save.gif` |
+
+Ensure `test_data/` assets exist (e.g. run your repo’s test-asset generators if present). The video demo creates output directories under `test_data/` as needed.
 
 ## Developer Notes
 If working in cursor, you can change the editor to use cursor instead.
