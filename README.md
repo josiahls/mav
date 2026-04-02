@@ -9,7 +9,7 @@ This project is originally part of ash_dynamics, but has been separated out to b
 
 This package uses ffmpeg 8.0.1 from conda-forge. Please the LICENSE section for more information.
 
-Simple example of generating a single image can be found in `third_party/mav/tests/test_ffmpeg/test_ffmpeg_h264_to_pgm.mojo`
+Simple example of generating a single image can be found in `tests/test_ffmpeg/test_ffmpeg_h264_to_pgm.mojo`
 
 High level API usage can be found in implementing repos such as:
 - [ash_dynamics io module](https://github.com/josiahls/ash_dynamics/blob/main/ash_dynamics/image/io.mojo)
@@ -20,17 +20,29 @@ High level API usage can be found in implementing repos such as:
 
 `mav` will install `FFmpeg`, however the Mojo compiler must be pointed to those
 libraries.
-```bash
-# Add to [activation.env]
+```toml
+[workspace]
+channels = [
+    "https://repo.prefix.dev/modular-community", 
+    "conda-forge"
+]
+
+[activation.env]
 LIBRARY_PATH = "$CONDA_PREFIX/lib:$LIBRARY_PATH"
 MAV_LINKERS = " -Xlinker -lavutil -Xlinker -lavcodec -Xlinker -lswresample -Xlinker -lswscale -Xlinker -lavformat"
 
-pixi add mav
+[dependencies]
+mav = "==0.0.4"
+```
 
+Code execution requires including the linker flags before running any code that 
+uses the `mav` package:
+```bash
 pixi run mojo build $MAV_LINKERS file.mojo -o file
 ```
 
-### Ubuntu
+
+### Ubuntu ∫
 ```bash
 # For encoding video and simulations into h264, the encoder must be installed
 # user side / and separately:
