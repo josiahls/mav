@@ -308,7 +308,9 @@ def test_av_hex_dump() raises:
 def test_av_dump_format() raises:
     var ctx_ptr = alloc[UnsafePointer[AVFormatContext, MutExternalOrigin]](1)
     memset(ctx_ptr, 0, 1)
-    var path = String("{}/test_data/testsrc_320x180_30fps_2s.h264").format(
+    var path = String(
+        "{}/test_data/generate_test_videos_src_320x180_30fps_2s.h264"
+    ).format(
         getenv("PIXI_PROJECT_ROOT"),
     )
     var ret = avformat.avformat_open_input(
@@ -515,7 +517,9 @@ def test_av_url_split() raises:
 def test_avformat_find_stream_info() raises:
     var ctx_ptr = alloc[UnsafePointer[AVFormatContext, MutExternalOrigin]](1)
     memset(ctx_ptr, 0, 1)
-    var path = String("{}/test_data/testsrc_320x180_30fps_2s.h264").format(
+    var path = String(
+        "{}/test_data/generate_test_videos_src_320x180_30fps_2s.h264"
+    ).format(
         getenv("PIXI_PROJECT_ROOT"),
     )
     var ret = avformat.avformat_open_input(
@@ -544,7 +548,9 @@ def test_avformat_find_stream_info() raises:
 def test_av_find_best_stream() raises:
     var ctx_ptr = alloc[UnsafePointer[AVFormatContext, MutExternalOrigin]](1)
     memset(ctx_ptr, 0, 1)
-    var path = String("{}/test_data/testsrc_320x180_30fps_2s.h264").format(
+    var path = String(
+        "{}/test_data/generate_test_videos_src_320x180_30fps_2s.h264"
+    ).format(
         getenv("PIXI_PROJECT_ROOT"),
     )
     var ret = avformat.avformat_open_input(
@@ -584,7 +590,9 @@ def test_av_find_best_stream() raises:
 def test_av_read_frame() raises:
     var ctx_ptr = alloc[UnsafePointer[AVFormatContext, MutExternalOrigin]](1)
     memset(ctx_ptr, 0, 1)
-    var path = String("{}/test_data/testsrc_320x180_30fps_2s.h264").format(
+    var path = String(
+        "{}/test_data/generate_test_videos_src_320x180_30fps_2s.h264"
+    ).format(
         getenv("PIXI_PROJECT_ROOT"),
     )
     var ret = avformat.avformat_open_input(
@@ -616,7 +624,9 @@ def test_av_read_frame() raises:
 def test_av_get_packet() raises:
     var ctx_ptr = alloc[UnsafePointer[AVFormatContext, MutExternalOrigin]](1)
     memset(ctx_ptr, 0, 1)
-    var path = String("{}/test_data/testsrc_320x180_30fps_2s.h264").format(
+    var path = String(
+        "{}/test_data/generate_test_videos_src_320x180_30fps_2s.h264"
+    ).format(
         getenv("PIXI_PROJECT_ROOT"),
     )
     var ret = avformat.avformat_open_input(
@@ -651,7 +661,9 @@ def test_av_get_packet() raises:
 def test_av_append_packet() raises:
     var ctx_ptr = alloc[UnsafePointer[AVFormatContext, MutExternalOrigin]](1)
     memset(ctx_ptr, 0, 1)
-    var path = String("{}/test_data/testsrc_320x180_30fps_2s.h264").format(
+    var path = String(
+        "{}/test_data/generate_test_videos_src_320x180_30fps_2s.h264"
+    ).format(
         getenv("PIXI_PROJECT_ROOT"),
     )
     var ret = avformat.avformat_open_input(
@@ -704,7 +716,9 @@ def test_av_hex_dump_log() raises:
 def test_av_guess_frame_rate() raises:
     var ctx_ptr = alloc[UnsafePointer[AVFormatContext, MutExternalOrigin]](1)
     memset(ctx_ptr, 0, 1)
-    var path = String("{}/test_data/testsrc_320x180_30fps_2s.h264").format(
+    var path = String(
+        "{}/test_data/generate_test_videos_src_320x180_30fps_2s.h264"
+    ).format(
         getenv("PIXI_PROJECT_ROOT"),
     )
     var ret = avformat.avformat_open_input(
@@ -743,7 +757,9 @@ def test_av_guess_frame_rate() raises:
 def test_av_guess_sample_aspect_ratio() raises:
     var ctx_ptr = alloc[UnsafePointer[AVFormatContext, MutExternalOrigin]](1)
     memset(ctx_ptr, 0, 1)
-    var path = String("{}/test_data/testsrc_320x180_30fps_2s.h264").format(
+    var path = String(
+        "{}/test_data/generate_test_videos_src_320x180_30fps_2s.h264"
+    ).format(
         getenv("PIXI_PROJECT_ROOT"),
     )
     var ret = avformat.avformat_open_input(
@@ -786,7 +802,9 @@ def test_av_guess_sample_aspect_ratio() raises:
 
 
 def test_av_probe_input_format() raises:
-    var path = String("{}/test_data/testsrc_320x180_30fps_2s.h264").format(
+    var path = String(
+        "{}/test_data/generate_test_videos_src_320x180_30fps_2s.h264"
+    ).format(
         getenv("PIXI_PROJECT_ROOT"),
     )
     var buf_size = 64
@@ -832,7 +850,9 @@ def test_av_probe_input_format() raises:
 def test_av_probe_input_buffer2() raises:
     var pb_ptr = alloc[UnsafePointer[AVIOContext, MutExternalOrigin]](1)
     memset(pb_ptr, 0, 1)
-    var path = String("{}/test_data/testsrc_320x180_30fps_2s.h264").format(
+    var path = String(
+        "{}/test_data/generate_test_videos_src_320x180_30fps_2s.h264"
+    ).format(
         getenv("PIXI_PROJECT_ROOT"),
     )
     var ret = avformat.avio_open(
@@ -862,7 +882,9 @@ def test_av_probe_input_buffer2() raises:
 def test_av_probe_input_buffer() raises:
     var pb_ptr = alloc[UnsafePointer[AVIOContext, MutExternalOrigin]](1)
     memset(pb_ptr, 0, 1)
-    var path = String("{}/test_data/testsrc_320x180_30fps_2s.h264").format(
+    var path = String(
+        "{}/test_data/generate_test_videos_src_320x180_30fps_2s.h264"
+    ).format(
         getenv("PIXI_PROJECT_ROOT"),
     )
     var ret = avformat.avio_open(
@@ -892,7 +914,9 @@ def test_av_probe_input_buffer() raises:
 def test_av_seek_frame() raises:
     var ctx_ptr = alloc[UnsafePointer[AVFormatContext, MutExternalOrigin]](1)
     memset(ctx_ptr, 0, 1)
-    var path = String("{}/test_data/testsrc_320x180_30fps_2s.h264").format(
+    var path = String(
+        "{}/test_data/generate_test_videos_src_320x180_30fps_2s.h264"
+    ).format(
         getenv("PIXI_PROJECT_ROOT"),
     )
     var ret = avformat.avformat_open_input(
@@ -928,7 +952,9 @@ def test_av_seek_frame() raises:
 def test_avformat_seek_file() raises:
     var ctx_ptr = alloc[UnsafePointer[AVFormatContext, MutExternalOrigin]](1)
     memset(ctx_ptr, 0, 1)
-    var path = String("{}/test_data/testsrc_320x180_30fps_2s.h264").format(
+    var path = String(
+        "{}/test_data/generate_test_videos_src_320x180_30fps_2s.h264"
+    ).format(
         getenv("PIXI_PROJECT_ROOT"),
     )
     var ret = avformat.avformat_open_input(
@@ -966,7 +992,9 @@ def test_avformat_seek_file() raises:
 def test_avformat_flush() raises:
     var ctx_ptr = alloc[UnsafePointer[AVFormatContext, MutExternalOrigin]](1)
     memset(ctx_ptr, 0, 1)
-    var path = String("{}/test_data/testsrc_320x180_30fps_2s.h264").format(
+    var path = String(
+        "{}/test_data/generate_test_videos_src_320x180_30fps_2s.h264"
+    ).format(
         getenv("PIXI_PROJECT_ROOT"),
     )
     var ret = avformat.avformat_open_input(
@@ -989,7 +1017,9 @@ def test_avformat_flush() raises:
 def test_av_read_play_pause() raises:
     var ctx_ptr = alloc[UnsafePointer[AVFormatContext, MutExternalOrigin]](1)
     memset(ctx_ptr, 0, 1)
-    var path = String("{}/test_data/testsrc_320x180_30fps_2s.h264").format(
+    var path = String(
+        "{}/test_data/generate_test_videos_src_320x180_30fps_2s.h264"
+    ).format(
         getenv("PIXI_PROJECT_ROOT"),
     )
     var ret = avformat.avformat_open_input(
@@ -1013,7 +1043,9 @@ def test_av_read_play_pause() raises:
 def test_av_find_program_from_stream() raises:
     var ctx_ptr = alloc[UnsafePointer[AVFormatContext, MutExternalOrigin]](1)
     memset(ctx_ptr, 0, 1)
-    var path = String("{}/test_data/testsrc_320x180_30fps_2s.h264").format(
+    var path = String(
+        "{}/test_data/generate_test_videos_src_320x180_30fps_2s.h264"
+    ).format(
         getenv("PIXI_PROJECT_ROOT"),
     )
     var ret = avformat.avformat_open_input(
@@ -1064,7 +1096,9 @@ def test_av_program_add_stream_index() raises:
 def test_av_pkt_dump2() raises:
     var ctx_ptr = alloc[UnsafePointer[AVFormatContext, MutExternalOrigin]](1)
     memset(ctx_ptr, 0, 1)
-    var path = String("{}/test_data/testsrc_320x180_30fps_2s.h264").format(
+    var path = String(
+        "{}/test_data/generate_test_videos_src_320x180_30fps_2s.h264"
+    ).format(
         getenv("PIXI_PROJECT_ROOT"),
     )
     var ret = avformat.avformat_open_input(
@@ -1106,7 +1140,9 @@ def test_av_pkt_dump2() raises:
 def test_av_pkt_dump_log2() raises:
     var ctx_ptr = alloc[UnsafePointer[AVFormatContext, MutExternalOrigin]](1)
     memset(ctx_ptr, 0, 1)
-    var path = String("{}/test_data/testsrc_320x180_30fps_2s.h264").format(
+    var path = String(
+        "{}/test_data/generate_test_videos_src_320x180_30fps_2s.h264"
+    ).format(
         getenv("PIXI_PROJECT_ROOT"),
     )
     var ret = avformat.avformat_open_input(
@@ -1145,7 +1181,9 @@ def test_av_pkt_dump_log2() raises:
 def test_av_index_search_timestamp() raises:
     var ctx_ptr = alloc[UnsafePointer[AVFormatContext, MutExternalOrigin]](1)
     memset(ctx_ptr, 0, 1)
-    var path = String("{}/test_data/testsrc_320x180_30fps_2s.h264").format(
+    var path = String(
+        "{}/test_data/generate_test_videos_src_320x180_30fps_2s.h264"
+    ).format(
         getenv("PIXI_PROJECT_ROOT"),
     )
     var ret = avformat.avformat_open_input(
@@ -1182,7 +1220,9 @@ def test_av_index_search_timestamp() raises:
 def test_avformat_index_get_entries_count() raises:
     var ctx_ptr = alloc[UnsafePointer[AVFormatContext, MutExternalOrigin]](1)
     memset(ctx_ptr, 0, 1)
-    var path = String("{}/test_data/testsrc_320x180_30fps_2s.h264").format(
+    var path = String(
+        "{}/test_data/generate_test_videos_src_320x180_30fps_2s.h264"
+    ).format(
         getenv("PIXI_PROJECT_ROOT"),
     )
     var ret = avformat.avformat_open_input(
@@ -1216,7 +1256,9 @@ def test_avformat_index_get_entries_count() raises:
 def test_avformat_index_get_entry() raises:
     var ctx_ptr = alloc[UnsafePointer[AVFormatContext, MutExternalOrigin]](1)
     memset(ctx_ptr, 0, 1)
-    var path = String("{}/test_data/testsrc_320x180_30fps_2s.h264").format(
+    var path = String(
+        "{}/test_data/generate_test_videos_src_320x180_30fps_2s.h264"
+    ).format(
         getenv("PIXI_PROJECT_ROOT"),
     )
     var ret = avformat.avformat_open_input(
@@ -1255,7 +1297,9 @@ def test_avformat_index_get_entry() raises:
 def test_avformat_index_get_entry_from_timestamp() raises:
     var ctx_ptr = alloc[UnsafePointer[AVFormatContext, MutExternalOrigin]](1)
     memset(ctx_ptr, 0, 1)
-    var path = String("{}/test_data/testsrc_320x180_30fps_2s.h264").format(
+    var path = String(
+        "{}/test_data/generate_test_videos_src_320x180_30fps_2s.h264"
+    ).format(
         getenv("PIXI_PROJECT_ROOT"),
     )
     var ret = avformat.avformat_open_input(
@@ -1310,7 +1354,9 @@ def test_av_add_index_entry() raises:
 def test_avformat_queue_attached_pictures() raises:
     var ctx_ptr = alloc[UnsafePointer[AVFormatContext, MutExternalOrigin]](1)
     memset(ctx_ptr, 0, 1)
-    var path = String("{}/test_data/testsrc_320x180_30fps_2s.h264").format(
+    var path = String(
+        "{}/test_data/generate_test_videos_src_320x180_30fps_2s.h264"
+    ).format(
         getenv("PIXI_PROJECT_ROOT"),
     )
     var ret = avformat.avformat_open_input(
