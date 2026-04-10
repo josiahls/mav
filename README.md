@@ -14,7 +14,7 @@ Simple example of generating a single image can be found in `tests/test_ffmpeg/t
 ![./test_video_save.gif](./test_video_save.gif)
 
 ## High Level API Reference
-Its strongly recommended to use the native FFmpeg C [examples](https://github.com/FFmpeg/FFmpeg/tree/master/doc/examples) for now.
+Its strongly recommended to use the native FFmpeg C [examples](https://github.com/FFmpeg/FFmpeg/tree/master/doc/examples) as "best practice" reference for now.
 
 ## High Level API Current Projects Using MAV
 - [momanim](https://github.com/josiahls/momanim) (Early development)
