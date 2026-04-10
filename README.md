@@ -11,10 +11,13 @@ This package uses ffmpeg 8.0.1 from conda-forge. Please see the LICENSE section 
 
 Simple example of generating a single image can be found in `tests/test_ffmpeg/test_image_example.mojo`
 
-High level API usage can be found in implementing repos such as:
-- [ash_dynamics io module](https://github.com/josiahls/ash_dynamics/blob/main/ash_dynamics/image/io.mojo)
-
 ![./test_video_save.gif](./test_video_save.gif)
+
+## High Level API Reference
+Its strongly recommended to use the native FFmpeg C [examples](https://github.com/FFmpeg/FFmpeg/tree/master/doc/examples) for now.
+
+## High Level API Current Projects Using MAV
+- [momanim](https://github.com/josiahls/momanim) (Early development)
 
 ## Installation
 
@@ -60,10 +63,6 @@ pixi run test_all
 ```
 
 ## Demo
-```bash
-pixi run test tests/test_ffmpeg/test_ffmpeg_h264_to_mp4.mojo
-```
-Output example: `test_data/dash_manual/testsrc_320x180_30fps_2s.mp4` (under `PIXI_PROJECT_ROOT` / project root when set).
 
 ### Image encode/decode (`test_image_example.mojo`)
 
