@@ -9,8 +9,6 @@ x-mav_base: &mav_base
   stdin_open: true
   tty: true
   shm_size: 16000000000
-  ports:
-    - "5910:5910"
   volumes:
     - .:/home/mojo_user/mav/
     - ~/.ssh:/home/mojo_user/.ssh:rw
