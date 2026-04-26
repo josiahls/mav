@@ -2,3 +2,9 @@
 	path = third_party/modular-community
 	url = git@github.com:josiahls/modular-community.git
     ignore = all
+
+
+[submodule "third_party/ffmpeg"]
+	path = third_party/ffmpeg
+	url = https://github.com/FFmpeg/FFmpeg.git
+	branch = release/8.0
