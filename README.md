@@ -52,7 +52,15 @@ pixi run mojo build $MAV_LINKERS file.mojo -o file
 ```
 
 
-### Ubuntu ∫
+### With OpenH264
+In your `pixi.toml`, add the following:
+```toml
+[dependencies]
+mav = "==0.0.4"
+openh264 = "==2.6.0"
+```
+
+In this repo, you can run the following to test the OpenH264 support:
 ```bash
 # For encoding video and simulations into h264, the encoder must be installed
 # user side / and separately:
