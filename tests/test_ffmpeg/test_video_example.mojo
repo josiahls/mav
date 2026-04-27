@@ -5,52 +5,56 @@
 
 from std.testing import TestSuite
 from std.pathlib import Path
-from std.os import getenv
+from std.os import getenv, abort, makedirs, sep
 from std.os.path import join
-import std.os
 from std.itertools import count
 from std.ffi import c_uchar, c_int, c_long_long, c_double
 from std.sys._libc_errno import ErrNo
+from std.logger.logger import Logger, Level
+
+from mav.ffmpeg import avformat
+from mav.ffmpeg import avutil
+from mav.ffmpeg import swscale
+from mav.ffmpeg import avcodec
 
 from mav.ffmpeg.avcodec.packet import AVPacket
-from mav.ffmpeg.avutil.avutil import AVMediaType
 from mav.ffmpeg.avcodec.codec_id import AVCodecID
+from mav.ffmpeg.avcodec.codec import AVCodec
+
 from mav.ffmpeg.avutil.rational import AVRational
 from mav.ffmpeg.avutil.dict import AVDictionary
 from mav.ffmpeg.avcodec.avcodec import (
     AVCodecContext,
     AV_CODEC_FLAG_GLOBAL_HEADER,
 )
+from mav.ffmpeg.avutil.avutil import AVMediaType
 from mav.ffmpeg.avutil.frame import AVFrame
-from mav.ffmpeg import avcodec
 from mav.ffmpeg.avutil.error import AVERROR, AVERROR_EOF
-from mav.ffmpeg.avformat.avformat import (
-    AVFormatContext,
-    AVStream,
-    AVFMT_GLOBALHEADER,
-    AVFMT_NOFILE,
-)
-from mav.ffmpeg.avformat.avio import AVIOContext
-from mav.ffmpeg.avcodec.codec import AVCodec
-from mav.ffmpeg.swscale.swscale import (
-    SwsContext,
-    SwsFilter,
-    SwsFlags,
-    SwsDither,
-)
-from mav.ffmpeg.avformat import AVIO_FLAG_WRITE
-from mav.ffmpeg import avformat
-from mav.ffmpeg import avutil
 from mav.ffmpeg.avutil.samplefmt import AVSampleFormat
 from mav.ffmpeg.avutil.channel_layout import (
     AVChannelLayout,
     AV_CHANNEL_LAYOUT_STEREO,
 )
 from mav.ffmpeg.avutil.pixfmt import AVPixelFormat, AVColorSpace
-from mav.ffmpeg import swscale
-from mav.ffmpeg import swrsample
+
+from mav.ffmpeg.avformat.avformat import (
+    AVFormatContext,
+    AVStream,
+    AVFMT_GLOBALHEADER,
+    AVFMT_NOFILE,
+)
+from mav.ffmpeg.avformat import AVIO_FLAG_WRITE
+from mav.ffmpeg.avformat.avio import AVIOContext
+
+from mav.ffmpeg.swscale.swscale import (
+    SwsContext,
+    SwsFilter,
+    SwsFlags,
+    SwsDither,
+)
+
+
 from mav.ffmpeg.swrsample import SwrContext
-from std.logger.logger import Logger, Level, DEFAULT_LEVEL
 
 comptime _logger = Logger[level=Level.DEBUG]()
 
@@ -76,11 +80,9 @@ def convert_format(
         UnsafePointer[SwsContext, origin=MutExternalOrigin],
         origin=MutExternalOrigin,
     ],
-    mut enc: UnsafePointer[AVCodecContext, origin=MutExternalOrigin],
     src_format: AVPixelFormat.ENUM_DTYPE,
     dst_format: AVPixelFormat.ENUM_DTYPE,
 ) raises:
-    _ = enc
     var src_w = src_frame[].width
     var src_h = src_frame[].height
     var dst_w = dst_frame[].width
@@ -233,7 +235,6 @@ def decode_packet(
                 src_frame=frame,
                 dst_frame=tmp_frame,
                 sws_ctx=sws_ctx,
-                enc=video_codec_ctx,
                 src_format=frame[].format,
                 dst_format=AVPixelFormat.AV_PIX_FMT_RGBA._value,
             )
@@ -425,7 +426,7 @@ def open_video(
 
     ost.frame = alloc_frame(ost.enc)
     if not ost.frame:
-        std.os.abort("Failed to allocate video frame")
+        abort("Failed to allocate video frame")
 
     ost.conversion_frame = alloc_frame(ost.enc)
 
@@ -545,7 +546,6 @@ def get_video_frame(
             src_frame=ost.conversion_frame,
             dst_frame=ost.frame,
             sws_ctx=ost.sws_ctx,
-            enc=ost.enc,
             src_format=ost.conversion_frame[].format,
             dst_format=ost.enc[].pix_fmt,
         )
@@ -678,7 +678,7 @@ def test_video_write() raises:
         test_data_root,
         "test_data/generate_test_videos_testsrc_320x180_30fps_2s.mp4",
     )
-    std.os.makedirs(
+    makedirs(
         Path(join(test_data_root, "test_data/test_video_example")),
         exist_ok=True,
     )
@@ -686,8 +686,8 @@ def test_video_write() raises:
         test_data_root, "test_data/test_video_example/test_video_save.mp4"
     )
     var parent_path_parts = Path(save_path).parts()[:-1]
-    var parent_path = Path(String(std.os.sep).join(parent_path_parts))
-    std.os.makedirs(parent_path, exist_ok=True)
+    var parent_path = Path(String(sep).join(parent_path_parts))
+    makedirs(parent_path, exist_ok=True)
 
     var videos = demo_video_read(Path(root_path))
     demo_video_write(videos, Path(save_path))

@@ -1,37 +1,49 @@
-# Demo: read/write still images with libavcodec + libswscale. Self-contained (not an API).
-# Mirrors fixes from momanim `image_write` / `image_read`: suffix vs codec name, pix_fmt
-# from extension, swscale into encoder-native buffers, color_range vs color_space.
+"""Demo: read/write still images with libavcodec + libswscale. Self-contained (not an API).
 
-from std.testing import TestSuite
+This demo uses the FFmpeg examples:
+- https://ffmpeg.org//doxygen/trunk/decode_video_8c-example.html
+- https://ffmpeg.org//doxygen/trunk/encode_video_8c-example.html
+- https://ffmpeg.org//doxygen/trunk/mux_8c-example.html
+"""
+
+from std.testing import TestSuite, assert_equal
 from std.pathlib import Path
 from std.os import getenv
 from std.os.path import join
-from std.testing import assert_equal
 from std.utils import StaticTuple
-
-from std.ffi import c_uchar, c_int, c_long_long, c_double
+from std.ffi import c_uchar, c_int, c_double
 from std.sys._libc_errno import ErrNo
-from mav.ffmpeg.avcodec.packet import AVPacket
+from std.memory import memset, memcpy
+from std.logger.logger import Logger, DEFAULT_LEVEL, Level
+
 from mav.ffmpeg import avcodec
 from mav.ffmpeg import avutil
 from mav.ffmpeg import swscale
-from mav.ffmpeg.avutil.dict import AVDictionary
+from mav.ffmpeg.avcodec.packet import AVPacket
 from mav.ffmpeg.avcodec.defs import AV_INPUT_BUFFER_PADDING_SIZE
+from mav.ffmpeg.avcodec.avcodec import (
+    AVCodecContext,
+    AVCodec,
+    AVCodecParserContext,
+)
+from mav.ffmpeg.avutil.dict import AVDictionary
 from mav.ffmpeg.avutil.avutil import AV_NOPTS_VALUE
-from std.memory import memset, memcpy
-from mav.ffmpeg.avcodec.avcodec import AVCodecContext
 from mav.ffmpeg.avutil.frame import AVFrame
 from mav.ffmpeg.avutil.error import AVERROR, AVERROR_EOF
 from mav.ffmpeg.avutil.pixfmt import AVPixelFormat, AVColorRange, AVColorSpace
 from mav.ffmpeg.avutil.rational import AVRational
-from std.logger.logger import Logger, Level, DEFAULT_LEVEL
 from mav.ffmpeg.swscale.swscale import SwsContext, SwsFilter, SwsFlags
 
-comptime _logger = Logger[level=DEFAULT_LEVEL]()
+comptime _logger = Logger[level=Level.DEBUG]()
+comptime Ptr[T: AnyType] = UnsafePointer[T, origin=MutExternalOrigin]
+comptime ImmutPtr[T: AnyType] = UnsafePointer[T, origin=ImmutExternalOrigin]
 
 
 @always_inline
 def _check(ret: c_int, msg: StringLiteral) raises:
+    """Evaluates the return type error code and raises Error on failure.
+
+    Failing `ret` codes get translated to their cooresponding string rep."""
     if ret < 0:
         raise Error(msg.format(avutil.av_err2str(ret)))
 
@@ -43,11 +55,23 @@ struct ImageInfo(Movable, Writable):
 
     var width: c_int
     var height: c_int
-    """Pixel format of `plane_buffers` (matches decoder output)."""
     var format: AVPixelFormat.ENUM_DTYPE
+    """Pixel format of `plane_buffers` (matches decoder output)."""
     var color_range: c_int
+    "YUV specific metadata."
     var color_space: c_int
+    "YUV specific metadata."
+    # TODO: Replace StaticTuple with InlineArray in all instances.
     var linesize: StaticTuple[c_int, AVFrame.AV_NUM_DATA_POINTERS]
+    """Number of bytes per picture line.
+    
+    Will indicate padding for alignment.
+
+    For example if we have RGB format, 3 channels:
+    - A 128x128 image will have a row width of 128 * 3 and linesize of 384.
+    - A 127x127 image will have a row width of 127 * 3 but still linesize of 384.
+
+    """
     var plane_buffers: List[List[c_uchar]]
 
     def __init__(out self):
@@ -60,6 +84,18 @@ struct ImageInfo(Movable, Writable):
         self.plane_buffers = List[List[c_uchar]]()
         for _ in range(AVFrame.AV_NUM_DATA_POINTERS):
             self.plane_buffers.append(List[c_uchar]())
+
+    def write_to(self, mut writer: Some[Writer]):
+        writer.write(
+            "Image: ", self.height, "x", self.width, " PixFormat: ", self.format
+        )
+        writer.write(" linesize: [")
+        for i in range(AVFrame.AV_NUM_DATA_POINTERS):
+            if self.linesize[i] != 0:
+                if i > 0:
+                    writer.write(",")
+                writer.write(self.linesize[i])
+        writer.write("]")
 
 
 # BITEXACT + ACCURATE_RND: YUV→RGB rounding can otherwise differ by ±1 between
@@ -78,11 +114,9 @@ def convert_format(
         UnsafePointer[SwsContext, origin=MutExternalOrigin],
         origin=MutExternalOrigin,
     ],
-    mut enc: UnsafePointer[AVCodecContext, origin=MutExternalOrigin],
     src_format: AVPixelFormat.ENUM_DTYPE,
     dst_format: AVPixelFormat.ENUM_DTYPE,
 ) raises:
-    _ = enc
     var src_w = src_frame[].width
     var src_h = src_frame[].height
     var dst_w = dst_frame[].width
@@ -104,11 +138,14 @@ def convert_format(
         if not sws_ctx[]:
             raise Error("Failed to initialize conversion context")
 
-    var src_slice = alloc[UnsafePointer[c_uchar, ImmutExternalOrigin]](8)
-    for i in range(8):
+    var src_slice = alloc[UnsafePointer[c_uchar, ImmutExternalOrigin]](
+        AVFrame.AV_NUM_DATA_POINTERS
+    )
+    var dst_slice = alloc[UnsafePointer[c_uchar, MutExternalOrigin]](
+        AVFrame.AV_NUM_DATA_POINTERS
+    )
+    comptime for i in range(AVFrame.AV_NUM_DATA_POINTERS):
         src_slice[i] = src_frame[].data[i].as_immutable()
-    var dst_slice = alloc[UnsafePointer[c_uchar, MutExternalOrigin]](8)
-    for i in range(8):
         dst_slice[i] = dst_frame[].data[i]
 
     var res = swscale.sws_scale(
@@ -155,7 +192,18 @@ def alloc_frame(
     )
 
 
-def get_pix_fmt_from_extension(
+def get_encoder_name_from_suffix(
+    suffix: String,
+) raises -> String:
+    if suffix == ".png":
+        return "png"
+    elif suffix == ".jpg" or suffix == ".jpeg":
+        return "mjpeg"
+    else:
+        raise Error("Unsupported extension: ", suffix)
+
+
+def get_pix_fmt_from_suffix(
     suffix: String,
 ) raises -> AVPixelFormat.ENUM_DTYPE:
     if suffix == ".png":
@@ -167,9 +215,9 @@ def get_pix_fmt_from_extension(
 
 
 def decode(
-    dec_ctx: UnsafePointer[AVCodecContext, origin=MutExternalOrigin],
-    frame: UnsafePointer[AVFrame, origin=MutExternalOrigin],
-    pkt: UnsafePointer[AVPacket, origin=MutExternalOrigin],
+    dec_ctx: Ptr[AVCodecContext],
+    frame: Ptr[AVFrame],
+    pkt: Ptr[AVPacket],
     mut image_info: ImageInfo,
 ) raises:
     var ret: c_int = avcodec.avcodec_send_packet(dec_ctx, pkt)
@@ -186,19 +234,18 @@ def decode(
         image_info.format = dec_ctx[].pix_fmt
         image_info.color_range = dec_ctx[].color_range
         image_info.color_space = dec_ctx[].color_space
-        for i in range(AVFrame.AV_NUM_DATA_POINTERS):
+        comptime for i in range(AVFrame.AV_NUM_DATA_POINTERS):
             image_info.linesize[i] = frame[].linesize[i]
 
-        # TODO: plane byte lengths should follow av_image_fill_* per format; this matches
-        # the prior demo for full-height planes (ok for packed RGB; YUV chroma may differ).
-        for i in range(AVFrame.AV_NUM_DATA_POINTERS):
             if not frame[].data[i]:
                 continue
             var plane_h = frame[].height
+
             if (
                 i > 0
                 and dec_ctx[].pix_fmt == AVPixelFormat.AV_PIX_FMT_YUV420P._value
             ):
+                # NOTE: YUV420P U and V are half the linesize of Y
                 plane_h = frame[].height >> 1
             image_info.plane_buffers[i].extend(
                 Span(
@@ -211,32 +258,45 @@ def decode(
 def image_read[in_buffer_size: c_int = 4096](path: Path) raises -> ImageInfo:
     _logger.info("Reading image from path: ", path)
 
-    var dict = UnsafePointer[AVDictionary, MutExternalOrigin]()
-    var dict_ptr = alloc[UnsafePointer[AVDictionary, MutExternalOrigin]](1)
-    dict_ptr[] = dict
-    var extension = path.suffix()
-
+    # NOTE: https://ffmpeg.org//doxygen/trunk/group__lavc__parsing.html#ga691ca0258e91f99297e7726f56d8c247
+    # Parse expects `AV_INPUT_BUFFER_PADDING_SIZE`.
     var input_buffer = InlineArray[
         c_uchar, Int(in_buffer_size + AV_INPUT_BUFFER_PADDING_SIZE)
     ](uninitialized=True)
 
+    # Set the padding portion to 0.
     memset(
         input_buffer.unsafe_ptr() + in_buffer_size,
         0,
         Int(AV_INPUT_BUFFER_PADDING_SIZE),
     )
 
-    var packet = avcodec.av_packet_alloc()
-    var codec = avcodec.avcodec_find_decoder_by_name(extension)
-    var parser = avcodec.av_parser_init(codec[].id)
-    var context = avcodec.avcodec_alloc_context3(codec)
-    var ret = avcodec.avcodec_open2(context, codec, dict_ptr)
-    assert_equal(ret, 0)
-    var frame = avutil.av_frame_alloc()
+    # AVPacket contains compressed data.
+    var packet: Ptr[AVPacket] = avcodec.av_packet_alloc()
+    # AVFrame contains uncompressed data.
+    var frame: Ptr[AVFrame] = avutil.av_frame_alloc()
+    # Read only interface describing a codec to use. e.g.:
+    # mjpeg, pbm, libopenh264, png
+    # found in: ffmpeg -decoders or ffmpeg -encoders respectively
+    var codec_name = get_encoder_name_from_suffix(path.suffix())
+    var codec: ImmutPtr[AVCodec] = avcodec.avcodec_find_decoder_by_name(
+        codec_name
+    )
+    # AVCodecParserContext handles reading / writing bytes to and from encoders
+    # or decoders.
+    var parser: Ptr[AVCodecParserContext] = avcodec.av_parser_init(codec[].id)
+    # AVCodecContext is the actual `state` of the encoder / decoder.
+    var context: Ptr[AVCodecContext] = avcodec.avcodec_alloc_context3(codec)
+    # NOTE: For videos they also require container structs:
+    #       AVFormatContext: Handles formats such as mp4 that multiple AVStreams
+    _check(avcodec.avcodec_open2(context, codec), "Failed to open codec: {}")
+
+    # Demo non-ffmpeg allocated struct for storing / transporting decoded images.
     var image_info = ImageInfo()
+    var flushing = False
 
     with open(path, "r") as f:
-        while True:
+        while not flushing:
             var data = (
                 input_buffer.unsafe_ptr()
                 .as_immutable()
@@ -244,9 +304,12 @@ def image_read[in_buffer_size: c_int = 4096](path: Path) raises -> ImageInfo:
             )
             var data_size = c_int(f.read(buffer=input_buffer))
             if data_size == 0:
-                break
+                flushing = True
 
-            while data_size > 0:
+            while data_size > 0 or flushing:
+                if flushing:
+                    data = type_of(data)()
+                    data_size = 0
                 _logger.debug("Data size: ", data_size)
                 var size = avcodec.av_parser_parse2(
                     parser,
@@ -260,11 +323,17 @@ def image_read[in_buffer_size: c_int = 4096](path: Path) raises -> ImageInfo:
                     0,
                 )
 
-                _logger.debug("Parsed size: ", size)
-                data += size
-                data_size -= size
+                if flushing:
+                    _logger.debug("Flushing parser")
+                else:
+                    _logger.debug("Parsed size: ", size)
+                    data += size
+                    data_size -= size
 
                 if packet[].size > 0:
+                    # packet[].size > 0 is only true when the parser determines
+                    # a full packet has been parsed and can be sent to the decoder
+                    # to produce a frame.
                     _logger.debug("Packet size is: ", packet[].size)
                     decode(
                         context,
@@ -272,10 +341,10 @@ def image_read[in_buffer_size: c_int = 4096](path: Path) raises -> ImageInfo:
                         packet,
                         image_info,
                     )
+                if flushing:
+                    break
 
-    _logger.debug(
-        "Image info dimensions: ", image_info.width, "x", image_info.height
-    )
+    _logger.info(image_info)
 
     var frame_ptr = alloc[UnsafePointer[AVFrame, MutExternalOrigin]](1)
     frame_ptr[] = frame
@@ -321,14 +390,8 @@ def encode(
 def image_write(image_info: ImageInfo, path: Path) raises:
     _logger.info("Saving image to path: ", path)
 
-    var dict = UnsafePointer[AVDictionary, MutExternalOrigin]()
-    var dict_ptr = alloc[UnsafePointer[AVDictionary, MutExternalOrigin]](1)
-    dict_ptr[] = dict
     var suffix = path.suffix()
-    var codec_name = suffix
-    if suffix == ".jpeg" or suffix == ".jpg":
-        codec_name = "mjpeg"
-
+    var codec_name = get_encoder_name_from_suffix(suffix)
     var sws_ctx_ptr = UnsafePointer[SwsContext, MutExternalOrigin]()
     var sws_ctx = alloc[type_of(sws_ctx_ptr)](1)
     sws_ctx[] = sws_ctx_ptr
@@ -341,11 +404,11 @@ def image_write(image_info: ImageInfo, path: Path) raises:
     context[].height = image_info.height
     context[].color_range = image_info.color_range
     context[].color_space = image_info.color_space
-    context[].pix_fmt = get_pix_fmt_from_extension(suffix)
+    context[].pix_fmt = get_pix_fmt_from_suffix(suffix)
     var packet = avcodec.av_packet_alloc()
 
     _check(
-        avcodec.avcodec_open2(context, codec, dict_ptr),
+        avcodec.avcodec_open2(context, codec),
         "Failed to open codec: {}",
     )
 
@@ -379,7 +442,6 @@ def image_write(image_info: ImageInfo, path: Path) raises:
         src_frame=src_frame,
         dst_frame=dst_frame,
         sws_ctx=sws_ctx,
-        enc=context,
         src_format=from_fmt,
         dst_format=context[].pix_fmt,
     )
@@ -420,19 +482,33 @@ def image_write(image_info: ImageInfo, path: Path) raises:
 
 
 def test_image_write() raises:
-    var test_data_root = getenv("PIXI_PROJECT_ROOT")
-    var root_path = join(
-        test_data_root, "test_data/generate_test_videos_testsrc_128x128.png"
+    var test_data_root = Path(getenv("PIXI_PROJECT_ROOT")) / "test_data"
+    var image = image_read(
+        test_data_root / "generate_test_videos_testsrc_128x128.png"
     )
-    var image = image_read(Path(root_path))
-    var out1 = join(
-        test_data_root, "test_data/test_image_example/test_image_write.png"
+    image_write(
+        image, test_data_root / "test_image_example/test_image_write.png"
     )
-    image_write(image, Path(out1))
-    var out2 = join(
-        test_data_root, "test_data/test_image_example/test_image_write.jpg"
+    image_write(
+        image,
+        test_data_root / "test_image_example/test_image_write_128x128.jpg",
     )
-    image_write(image, Path(out2))
+
+    # Demo reading image in small chunks.
+    var img_127x127 = image_read[128](
+        test_data_root / "generate_test_videos_testsrc_127x127.png"
+    )
+    image_write(
+        img_127x127,
+        test_data_root / "test_image_example/test_image_write_127x127.jpg",
+    )
+    # Demo jpg which we have being encoded to YUV format
+    var _ = image_read(
+        test_data_root / "test_image_example/test_image_write_128x128.jpg"
+    )
+    var _ = image_read(
+        test_data_root / "test_image_example/test_image_write_127x127.jpg"
+    )
 
 
 def main() raises:
